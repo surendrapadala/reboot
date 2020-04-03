@@ -1,0 +1,25 @@
+---
+- hosts: kubem
+  vars:
+    token: b0f7b8.8d1767876297d85b
+    pod_network_cdir: 10.244.0.0/16
+    master_ip: 10.6.1.90
+  become: yes
+  tasks:
+    - name: Reset Kubernetes component
+      shell: "kubeadm reset --force"
+
+    - name: kubernetes cluster
+      shell: |
+        kubeadm init --token {{ token }} \
+                     --pod-network-cidr {{ pod_network_cdir }} \
+                     --apiserver-advertise-address {{ master_ip }}
+
+    - name: init x809 and all
+      command: "{{ item }}"
+      with_items:
+        - mkdir -p $HOME/.kube
+        - sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+        - sudo chown $(id -u):$(id -g) $HOME/.kube/config
+        - export kubever=$(kubectl version | base64 | tr -d '\n')
+        - kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$kubever"
