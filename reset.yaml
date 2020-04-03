@@ -1,0 +1,22 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: services 
+      service:
+        name: "{{ item }}"
+        state: stopped
+        enabled: no
+      with_items:
+      - docker
+      - kubelet
+      - firewalld
+
+    - name: packages installation
+      yum:
+        name: "{{ item }}"
+        state: absent
+        update_cache: true
+      with_items:
+      - docker
+      - kube*
